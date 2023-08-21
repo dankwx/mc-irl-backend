@@ -58,7 +58,7 @@ app.post("/baus", async (req, res) => {
       const id = bauData.id;
       delete bauData.id;
       docRef = doc(db, "baus", id);
-      await setDoc(docRef, bauData);
+      await setDoc(docRef, bauData, { merge: true });
     } else {
       docRef = await addDoc(collection(db, "baus"), bauData);
     }
