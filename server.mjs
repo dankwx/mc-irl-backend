@@ -1,20 +1,61 @@
 import express from "express";
 import cors from "cors";
-import { getFirestore, doc, getDoc } from "firebase/firestore";
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  collection,
+  addDoc,
+  getDocs,
+} from "firebase/firestore";
 import "./firebase.js";
 
 const app = express();
 const port = 3001;
 app.use(cors());
+app.use(express.json());
+
+//
+
+const API_KEY = "senha123456789";
+
+//
 
 app.get("/data", async (req, res) => {
   const db = getFirestore();
-  const bauDocRef = doc(db, "baus", "ZyejZzpG4ScQCEnEerAQ");
-  const bauDocSnapshot = await getDoc(bauDocRef);
-  if (bauDocSnapshot.exists()) {
-    res.json(bauDocSnapshot.data());
+  const bauCollectionRef = collection(db, "baus");
+  const bauCollectionSnapshot = await getDocs(bauCollectionRef);
+  const baus = [];
+  bauCollectionSnapshot.forEach((doc) => {
+    baus.push(doc.data());
+  });
+  res.json(baus);
+});
+
+app.post("/log", (req, res) => {
+  console.log(req.body);
+  const message = req.body.message;
+  console.log(message);
+  res.status(200).send("Mensagem recebida e exibida no console.");
+});
+
+app.get("/status", (req, res) => {
+  const apiKey = req.headers["x-api-key"];
+  if (apiKey === API_KEY) {
+    res.status(200).json({ message: "API online e funcionando" });
   } else {
-    res.status(404).json({ error: "Document not found" });
+    res.status(401).json({ error: "Chave de API inválida" });
+  }
+});
+
+app.post("/baus", async (req, res) => {
+  const db = getFirestore();
+  const bauData = req.body;
+  try {
+    const docRef = await addDoc(collection(db, "baus"), bauData);
+    res.status(201).json({ message: "Bau criado com sucesso", id: docRef.id });
+  } catch (e) {
+    res.status(500).json({ error: "Erro ao criar bau" });
   }
 });
 
