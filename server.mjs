@@ -7,6 +7,7 @@ import {
   collection,
   addDoc,
   getDocs,
+  deleteDoc,
 } from "firebase/firestore";
 import "./firebase.js";
 
@@ -56,6 +57,17 @@ app.post("/baus", async (req, res) => {
     res.status(201).json({ message: "Bau criado com sucesso", id: docRef.id });
   } catch (e) {
     res.status(500).json({ error: "Erro ao criar bau" });
+  }
+});
+
+app.delete("/baus/:id", async (req, res) => {
+  const db = getFirestore();
+  const bauId = req.params.id;
+  try {
+    await deleteDoc(doc(db, "baus", bauId));
+    res.status(200).json({ message: "Bau excluído com sucesso" });
+  } catch (e) {
+    res.status(500).json({ error: "Erro ao excluir bau" });
   }
 });
 
