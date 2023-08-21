@@ -7,6 +7,7 @@ import {
   collection,
   addDoc,
   getDocs,
+  setDoc,
 } from "firebase/firestore";
 import "./firebase.js";
 
@@ -52,7 +53,15 @@ app.post("/baus", async (req, res) => {
   const db = getFirestore();
   const bauData = req.body;
   try {
-    const docRef = await addDoc(collection(db, "baus"), bauData);
+    let docRef;
+    if (bauData.id) {
+      const id = bauData.id;
+      delete bauData.id;
+      docRef = doc(db, "baus", id);
+      await setDoc(docRef, bauData);
+    } else {
+      docRef = await addDoc(collection(db, "baus"), bauData);
+    }
     res.status(201).json({ message: "Bau criado com sucesso", id: docRef.id });
   } catch (e) {
     res.status(500).json({ error: "Erro ao criar bau" });
