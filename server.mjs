@@ -33,6 +33,22 @@ app.get("/data", async (req, res) => {
   res.json(baus);
 });
 
+app.get("/todos-itens", async (req, res) => {
+  const db = getFirestore();
+  const bauCollectionRef = collection(db, "baus");
+  const bauCollectionSnapshot = await getDocs(bauCollectionRef);
+  const todosItens = [];
+
+  for (const doc of bauCollectionSnapshot.docs) {
+    const bauData = doc.data();
+    if (bauData.itens) {
+      todosItens.push(...bauData.itens);
+    }
+  }
+
+  res.json(todosItens);
+});
+
 app.post("/log", (req, res) => {
   console.log(req.body);
   const message = req.body.message;
