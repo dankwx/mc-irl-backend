@@ -37,17 +37,34 @@ app.get("/todos-itens", async (req, res) => {
   const db = getFirestore();
   const bauCollectionRef = collection(db, "baus");
   const bauCollectionSnapshot = await getDocs(bauCollectionRef);
-  const todosItens = [];
+  const todosItens = {};
 
   for (const doc of bauCollectionSnapshot.docs) {
     const bauData = doc.data();
     if (bauData.itens) {
-      todosItens.push(...bauData.itens);
+      for (const item of bauData.itens) {
+        const nome = item.nome;
+        const quantidade = item.quantidade;
+
+        // Verifica se o item já existe no objeto "todosItens"
+        if (todosItens[nome]) {
+          todosItens[nome] += quantidade; // Soma a quantidade ao existente
+        } else {
+          todosItens[nome] = quantidade; // Adiciona o item ao objeto
+        }
+      }
     }
   }
 
-  res.json(todosItens);
+  // Converte o objeto em um array de objetos
+  const resultado = Object.entries(todosItens).map(([nome, quantidade]) => ({
+    nome,
+    quantidade,
+  }));
+
+  res.json(resultado);
 });
+
 
 app.post("/log", (req, res) => {
   console.log(req.body);
